@@ -7,6 +7,17 @@ import base64
 import requests
 
 
+def spider(session):
+    # The URL following is "此地周边"
+     # URL = r'https://m.weibo.cn/p/index?containerid=2304410021111.775248_30.18786_B2094655D464AAFA449D&needlocation=1&uid=2808429250&count=10&page=1&luicode=10000011&lfid=100101B2094655D464AAFA449D&featurecode=20000320'
+
+    # The URL following is One Specific UserID
+    URL = r'https://m.weibo.cn/detail/4279239991151924'
+
+    r = session.get(URL)
+    print(r.text)
+
+
 def login(username, password):
 
     username = base64.b64encode(username.encode('utf-8')).decode('utf-8')
@@ -65,15 +76,18 @@ def login(username, password):
         cookies = [key + "=" + value for key, value in cookies.items()]
         cookies = "; ".join(cookies)    # <Attention>: The first string is 分号 ！
         session.headers["cookie"] = cookies
-        
+
     else:
         print("登录失败，原因： %s" % info["reason"])
 
     return session
 
+
 if __name__ == '__main__':
 
-    account = "12345678987"
+    account = "18100000000"
     passwd = "**************"
 
     session = login(account, passwd)
+
+    spider(session)
