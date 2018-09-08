@@ -293,7 +293,7 @@ def constructURL(lng, lat, Inc, rightBoundage, downBoundage, ori_lng, ori_lat):
 
     if lng < rightBoundage:
         lng += Inc
-    if abs(lng - rightBoundage) < 0.0000001:
+    if abs(lng - rightBoundage) < 0.0001:
         lng = ori_lng
 
     if lat > downBoundage:
