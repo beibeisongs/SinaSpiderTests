@@ -88,57 +88,66 @@ def catchWeibo_HTML(scheme):
 def catchFromScipt(html_script, HTML_data):
     weibo_uid = ''
     weibo_created_time = ''
-    weibo_pic_url = ''
+    weibo_pic_url = []
     weibo_gender = ''
-    weibo_page_title = ''
+    weibo_page_title = []
     weibo_content1 = ''
 
     m_script = re.findall(html_script, HTML_data, re.S | re.M)
 
-    weibo_page_title = ''  # Initialize the variable weibo_page_title
+    weibo_page_title = []  # Initialize the variable weibo_page_title
     for script in m_script:
         res_page_title = r'"page_title": "(.*?)"'
 
         weibo_page_title = re.findall(res_page_title, script)
 
-    if not (weibo_page_title == []):
-        if weibo_page_title[0] != '':
-            weibo_page_title = weibo_page_title[0]
+    try:
+        if (weibo_page_title != []):
+            if weibo_page_title[0] != '':
+                if not ("视频" in weibo_page_title[0]):
+                    if not ("#" in weibo_page_title[0]):
+                        weibo_page_title = weibo_page_title[0]
 
-            weibo_content1 = ''  # Initialize the variable weibo_page_title
-            for script in m_script:
-                res_content1 = r'"content1": "(.*?)"'
+                        try:
+                            weibo_content1 = ''  # Initialize the variable weibo_page_title
+                            for script in m_script:
+                                res_content1 = r'"content1": "(.*?)"'
 
-                weibo_content1 = re.findall(res_content1, script)
-            weibo_content1 = weibo_content1[0]
+                                weibo_content1 = re.findall(res_content1, script)
+                            weibo_content1 = weibo_content1[0]
 
-            weibo_created_time = ''  # Initialize the variable weibo_created_time
-            for script in m_script:
-                # 注意：created_at 是一个类似json 的key
-                res_created_time = r'"created_at": "(.*?)"'
+                            weibo_created_time = ''  # Initialize the variable weibo_created_time
+                            for script in m_script:
+                                # 注意：created_at 是一个类似json 的key
+                                res_created_time = r'"created_at": "(.*?)"'
 
-                weibo_created_time = re.findall(res_created_time, script)
-            weibo_created_time = weibo_created_time[0]
+                                weibo_created_time = re.findall(res_created_time, script)
+                            weibo_created_time = weibo_created_time[0]
 
-            weibo_uid = ''
-            for script in m_script:
-                res_uid = r'"id": (.*?),'
+                            weibo_uid = ''
+                            for script in m_script:
+                                res_uid = r'"id": (.*?),'
 
-                weibo_uid = re.findall(res_uid, script)
-            weibo_uid = weibo_uid[1]
+                                weibo_uid = re.findall(res_uid, script)
+                            weibo_uid = weibo_uid[1]
 
-            weibo_pic_url = []
-            for script in m_script:
-                res_url = r'"url": "(.*?)"'
+                            weibo_pic_url = []
+                            for script in m_script:
+                                res_url = r'"url": "(.*?)"'
 
-                weibo_pic_url = re.findall(res_url, script)
+                                weibo_pic_url = re.findall(res_url, script)
 
-            weibo_gender = ''
-            for script in m_script:
-                res_gender = r'"gender": "(.*?)"'
+                            weibo_gender = ''
+                            for script in m_script:
+                                res_gender = r'"gender": "(.*?)"'
 
-                weibo_gender = re.findall(res_gender, script)
-            weibo_gender = weibo_gender[0]
+                                weibo_gender = re.findall(res_gender, script)
+                            weibo_gender = weibo_gender[0]
+
+                        except Exception as e:
+                            print(e)
+    except Exception as e:
+        print(e)
 
     return weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_page_title, weibo_content1
 
@@ -184,13 +193,12 @@ def tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark):
                 # <Sample>: idstr = 4281561774373070
                 # (Sample): tested_url of weibo: https://m.weibo.cn/status/4281561774373070
 
-                scheme = cards[j].get(
-                    'scheme')  # <Sample>: scheme = 'https://m.weibo.cn/status/GydNfilDo?mblogid=GydNfilDo&luicode=10000011&lfid=1076031995216231'
+                scheme = cards[j].get('scheme')  # <Sample>: scheme = 'https://m.weibo.cn/status/GydNfilDo?mblogid=GydNfilDo&luicode=10000011&lfid=1076031995216231'
                 text = mblog.get('text')
 
                 HTML_data = catchWeibo_HTML(scheme)
-                weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_page_title, weibo_content1 = extractINFO(
-                    HTML_data)
+                weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_page_title, weibo_content1 = extractINFO(HTML_data)
+
                 if weibo_uid != '':
 
                     data_dict["uid"] = weibo_uid
@@ -339,8 +347,8 @@ if __name__ == "__main__":
 
             uid = getUSRID(obj)
             # 临时测试：------------------------------------------------------------------------------------------------------------------------------------------------------------
-            # uid = '5147250296'
-            # uid = '1826082890'
+             # uid = '5147250296'
+              # uid = '5534369029'
 
             file = uid + ".json"
             get_weibo(uid, file)
