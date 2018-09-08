@@ -10,6 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import TimeoutException
 import time
+import datetime
 import urllib.request
 
 
@@ -326,15 +327,53 @@ def mkDocument(_dir, uid):
         return ''
 
 
+def open_Json_File_To_Write_2(json_path):
+    f1 = open(json_path, mode='w')  # 必须重写
+    return f1
+
+
+def writeTimeLog(_dir, uid, timeLogFileName):
+
+    json_path = _dir + uid + "/" + timeLogFileName
+
+    log_data = {}
+
+    nowTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在的时间
+    construct1 = nowTime.split('-')
+
+    year = construct1[0]
+    month = construct1[1]
+    day = ((construct1[2]).split(' '))[0]
+
+    log_data["year"] = year
+    log_data["month"] = month
+    log_data["day"] = day
+
+    fh = open_Json_File_To_Write_2(json_path)
+
+    a = json.dumps(log_data)
+    b = str(a) + "\n"
+
+    fh.write(b)
+    fh.close()
+
+    return
+
+
 if __name__ == "__main__":
 
     _dir = "./"
-    _dir = mkDocument(_dir, "Account")
+    _dir = mkDocument(_dir, "Accounts")
     _dir += "/"
     """
         <Attention>: 不要轻易改变该默认项
+                    要改的话，必须
+                                上下两个 "Accounts"
+                                同时改动为相同的！
     """
-    _dir = "./Account/"
+    _dir = "./Accounts/"
+
+    timeLogFileName = "TimeLog.json"
 
 
     obj = configDriver()
@@ -377,6 +416,8 @@ if __name__ == "__main__":
               # uid = '5534369029'
 
             if docPath != '':
+                writeTimeLog(_dir, uid, timeLogFileName)
+
                 file = docPath + "/" + uid + ".json"
                 get_weibo(uid, file)
         except:
