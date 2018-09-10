@@ -198,9 +198,8 @@ def getYear(weibo_created_time):
     return year
 
 
-def tryGetData(early_exit, POIExist_Count, i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessCount, lng, lat):
+def tryGetData(TOTALWeibo_Count, early_exit, POIExist_Count, i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessCount, lng, lat):
     print("---Process : tryGetData---")
-
 
     data = use_proxy(weibo_url, proxy_addr)
 
@@ -230,6 +229,8 @@ def tryGetData(early_exit, POIExist_Count, i, weibo_url, proxy_addr, recordedINF
                 text = mblog.get('text')
 
                 HTML_data = catchWeibo_HTML(scheme)
+                TOTALWeibo_Count += 1
+                print("TotalWeiboCount : ", TOTALWeibo_Count)
                 reqProcessCount += 1
                 print("reqProcessCount : ", reqProcessCount)
                 print("lng : ", lng, "lat : ", lat)
@@ -245,7 +246,7 @@ def tryGetData(early_exit, POIExist_Count, i, weibo_url, proxy_addr, recordedINF
                     if POIExist_Count == 0:
                         print("---Still No POI ! Exit !---")
                         early_exit = True
-                        return i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit
+                        return i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit, TOTALWeibo_Count
 
                 if reqProcessCount == 60:
                     print("---60 requests and sleep 1.5 seconds !---")
@@ -275,12 +276,22 @@ def tryGetData(early_exit, POIExist_Count, i, weibo_url, proxy_addr, recordedINF
                     if int(year) <= 2016: process_mark = False  # <Attention>: 发出年份小于2016的将不再爬取
 
                     recordedINFO.append(data_dict)
+
+                if TOTALWeibo_Count % 50 == 0:
+                    n = int(TOTALWeibo_Count / 50)
+                    if POIExist_Count < n:
+                        early_exit = True
+                        print("POIExist_Count / TotalWeibo_Count : ", POIExist_Count / TOTALWeibo_Count)
+                        print("Too Little POI ! ")
+                        return i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit, TOTALWeibo_Count
+
+                print("POIExist_Count / TotalWeibo_Count : ", POIExist_Count / TOTALWeibo_Count)
     else:
         process_mark = False
 
     i += 1
 
-    return i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit
+    return i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit, TOTALWeibo_Count
 
 
 def writeData(file, recordedINFO):
@@ -295,7 +306,7 @@ def writeData(file, recordedINFO):
 
 
 # 获取微博内容信息,并保存到文本中，内容包括：每条微博的内容、微博详情页面地址、点赞数、评论数、转发数等
-def get_weibo(POIExist_Count, id, file, reqProcessCount, lng, lat):
+def get_weibo(TOTALWeibo_Count, POIExist_Count, id, file, reqProcessCount, lng, lat):
     print("---Process : get_weibo---")
 
     i = 1
@@ -316,7 +327,7 @@ def get_weibo(POIExist_Count, id, file, reqProcessCount, lng, lat):
 
         recordedINFO = []  # 该博主的每条微博信息为一个元素
         try:
-            i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit = tryGetData(early_exit, POIExist_Count, i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessCount, lng, lat)
+            i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit, TOTALWeibo_Count = tryGetData(TOTALWeibo_Count, early_exit, POIExist_Count, i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessCount, lng, lat)
 
             if early_exit:
                 print("---Early Exit !---")
@@ -341,6 +352,7 @@ def get_weibo(POIExist_Count, id, file, reqProcessCount, lng, lat):
             print("content of one page:　")
             for record_sample in recordedINFO:
                 print(record_sample)
+
     return reqProcessCount
 
 
@@ -425,7 +437,7 @@ if __name__ == "__main__":
 
     reqProcessCount = 0    # 用来记录click 的总次数，每超过50次则休息3秒，然后归零
 
-    random = np.random.RandomState(4)  # RandomState生成随机数种子
+    random = np.random.RandomState(6)  # RandomState生成随机数种子
 
     _dir = "./"
     _dir = mkDocument(_dir, "Accounts_Wuhan")
@@ -487,9 +499,10 @@ if __name__ == "__main__":
                 if docPath != '':
                     writeTimeLog(_dir, uid, timeLogFileName)
                     POIExist_Count = 0
+                    TOTALWeibo_Count = 0
 
                     file = docPath + "/" + uid + ".json"
-                    reqProcessCount = get_weibo(POIExist_Count, uid, file, reqProcessCount, lng, lat)
+                    reqProcessCount = get_weibo(TOTALWeibo_Count, POIExist_Count, uid, file, reqProcessCount, lng, lat)
                 else:
                     print("The Account Exists ! ")
 
