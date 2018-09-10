@@ -5,6 +5,7 @@
 
 import json
 import cmath
+import numpy as np
 import os
 import re
 from selenium import webdriver
@@ -29,8 +30,7 @@ def open_Json_File_To_Write(path_to_write):
 # 定义页面打开函数
 def use_proxy(url, proxy_addr):  # <Sample> proxy_addr = '122.241.72.191:808'
 
-    req = urllib.request.Request(
-        url)  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
+    req = urllib.request.Request(url)  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
 
     # req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0")
     req.add_header("User-Agent",
@@ -39,9 +39,19 @@ def use_proxy(url, proxy_addr):  # <Sample> proxy_addr = '122.241.72.191:808'
     proxy = urllib.request.ProxyHandler({'http': proxy_addr})
     opener = urllib.request.build_opener(proxy, urllib.request.HTTPHandler)
     urllib.request.install_opener(opener)
-    data = urllib.request.urlopen(req).read().decode('utf-8', 'ignore')
 
-    return data
+    request_mark = True
+    while request_mark:
+        try:
+            data = urllib.request.urlopen(req, timeout=5)
+            data_read = data.read().decode('utf-8', 'ignore')
+
+            request_mark = False    # 退出循环
+        except:
+            print("---Proxy Time Out !---")
+            request_mark = True
+
+    return data_read
 
 
 # 获取微博主页的containerid，爬取微博内容时需要此id
@@ -62,8 +72,7 @@ def get_containerid(url):
 def get_userInfo(id):
     url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=' + id  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
 
-    data = use_proxy(url,
-                     proxy_addr)  # <Sample>: data = {"ok":1,"data":{"userInfo":{"id":1259110474,"screen_name":"\u8d75\u4e3d\u9896","profile_image_url":"https:\/\/tvax1.sinaimg.cn\/crop.0.0.684.684.180\/4b0c804aly8fu4lq4gumvj20j00j0ta6.jpg","profile_url":"https:\/\/m.weibo.cn\/u\/1259110474?uid=1259110474&luicode=10000011&lfid=1005051259110474","statuses_count":1342,"verified":true,"verified_type":0,"verified_type_ext":1,"verified_reason":"\u6f14\u5458\uff0c\u4ee3\u8868\u4f5c\u54c1\u300a\u82b1\u5343\u9aa8\u300b\u300a\u6749\u6749\u6765\u4e86\u300b\u300a\u9646\u8d1e\u4f20\u5947\u300b","close_blue_v":false,"description":"","gender":"f","mbtype":12,"urank":46,"mbrank":7,"follow_me":false,"following":false,"followers_count":68521642,"follow_count":461,"cover_image_phone":"https:\/\/wx4.sinaimg.cn\/crop.0.0.640.640.640\/4b0c804aly1fdwoyoobn7j20e60e83z9.jpg","avatar_hd":"https:\/\/wx1.sinaimg.cn\/orj480\/4b0c804aly8fu4lq4gumvj20j00j0ta6.jpg","like":false,"like_me":false,"toolbar_menus":[{"type":"profile_follow","name":"\u5173\u6ce8","pic":"","params":{"uid":1259110474}},{"type":"link","name":"\u804a\u5929","pic":"http:\/\/h5.sinaimg.cn\/upload\/2015\/06\/12\/2\/toolbar_icon_discuss_default.png","params":{"scheme":"sinaweibo:\/\/messagelist?uid=1259110474&nick=\u8d75\u4e3d\u9896"},"scheme":"https:\/\/passport.weibo.cn\/signin\/welcome?entry=mweibo&r=https%3A%2F%2Fm.weibo.cn%2Fapi%2Fcontainer%2FgetIndex%3Ftype%3Duid%26value%3D1259110474"},{"type":"link","name":"\u6587\u7ae0","pic":"","params":{"scheme":"sinaweibo:\/\/cardlist?containerid=2303190002_445_1259110474_WEIBO_ARTICLE_LIST_DETAIL&count=20"},"scheme":"https:\/\/m.weibo.cn\/p\/index?containerid=2303190002_445_1259110474_WEIBO_ARTICLE_LIST_DETAIL&count=20&luicode=10000011&lfid=1005051259110474"}]},"avatar_guide":[],"fans_scheme":"https:\/\/m.weibo.cn\/p\/index?containerid=231051_-_fans_intimacy_-_1259110474&luicode=10000011&lfid=1005051259110474","follow_scheme":"https:\/\/m.weibo.cn\/p\/index?containerid=231051_-_followersrecomm_-_1259110474&luicode=10000011&lfid=1005051259110474","tabsInfo":{"selectedTab":1,"tabs":[{"title":"\u4e3b\u9875","tab_type":"profile","containerid":"2302831259110474"},{"title":"\u5fae\u535a","tab_type":"weibo","containerid":"1076031259110474","apipath":"\/profile\/statuses","url":"\/index\/my"},{"title":"\u8d85\u8bdd","tab_type":"cardlist","containerid":"2314751259110474"},{"title":"\u76f8\u518c","tab_type":"album","containerid":"1078031259110474","filter_group_info":{"title":"\u5168\u90e8\u7167\u7247(0)","icon":"http:\/\/u1.sinaimg.cn\/upload\/2014\/06\/10\/userinfo_icon_album.png","icon_name":"\u4e13\u8f91","icon_scheme":""}}]},"showAppTips":1,"scheme":"sinaweibo:\/\/userinfo?uid=1259110474&luicode=10000011&lfid=1005051259110474&from=1110006030"}}
+    data = use_proxy(url, proxy_addr)  # <Sample>: data = {"ok":1,"data":{"userInfo":{"id":1259110474,"screen_name":"\u8d75\u4e3d\u9896","profile_image_url":"https:\/\/tvax1.sinaimg.cn\/crop.0.0.684.684.180\/4b0c804aly8fu4lq4gumvj20j00j0ta6.jpg","profile_url":"https:\/\/m.weibo.cn\/u\/1259110474?uid=1259110474&luicode=10000011&lfid=1005051259110474","statuses_count":1342,"verified":true,"verified_type":0,"verified_type_ext":1,"verified_reason":"\u6f14\u5458\uff0c\u4ee3\u8868\u4f5c\u54c1\u300a\u82b1\u5343\u9aa8\u300b\u300a\u6749\u6749\u6765\u4e86\u300b\u300a\u9646\u8d1e\u4f20\u5947\u300b","close_blue_v":false,"description":"","gender":"f","mbtype":12,"urank":46,"mbrank":7,"follow_me":false,"following":false,"followers_count":68521642,"follow_count":461,"cover_image_phone":"https:\/\/wx4.sinaimg.cn\/crop.0.0.640.640.640\/4b0c804aly1fdwoyoobn7j20e60e83z9.jpg","avatar_hd":"https:\/\/wx1.sinaimg.cn\/orj480\/4b0c804aly8fu4lq4gumvj20j00j0ta6.jpg","like":false,"like_me":false,"toolbar_menus":[{"type":"profile_follow","name":"\u5173\u6ce8","pic":"","params":{"uid":1259110474}},{"type":"link","name":"\u804a\u5929","pic":"http:\/\/h5.sinaimg.cn\/upload\/2015\/06\/12\/2\/toolbar_icon_discuss_default.png","params":{"scheme":"sinaweibo:\/\/messagelist?uid=1259110474&nick=\u8d75\u4e3d\u9896"},"scheme":"https:\/\/passport.weibo.cn\/signin\/welcome?entry=mweibo&r=https%3A%2F%2Fm.weibo.cn%2Fapi%2Fcontainer%2FgetIndex%3Ftype%3Duid%26value%3D1259110474"},{"type":"link","name":"\u6587\u7ae0","pic":"","params":{"scheme":"sinaweibo:\/\/cardlist?containerid=2303190002_445_1259110474_WEIBO_ARTICLE_LIST_DETAIL&count=20"},"scheme":"https:\/\/m.weibo.cn\/p\/index?containerid=2303190002_445_1259110474_WEIBO_ARTICLE_LIST_DETAIL&count=20&luicode=10000011&lfid=1005051259110474"}]},"avatar_guide":[],"fans_scheme":"https:\/\/m.weibo.cn\/p\/index?containerid=231051_-_fans_intimacy_-_1259110474&luicode=10000011&lfid=1005051259110474","follow_scheme":"https:\/\/m.weibo.cn\/p\/index?containerid=231051_-_followersrecomm_-_1259110474&luicode=10000011&lfid=1005051259110474","tabsInfo":{"selectedTab":1,"tabs":[{"title":"\u4e3b\u9875","tab_type":"profile","containerid":"2302831259110474"},{"title":"\u5fae\u535a","tab_type":"weibo","containerid":"1076031259110474","apipath":"\/profile\/statuses","url":"\/index\/my"},{"title":"\u8d85\u8bdd","tab_type":"cardlist","containerid":"2314751259110474"},{"title":"\u76f8\u518c","tab_type":"album","containerid":"1078031259110474","filter_group_info":{"title":"\u5168\u90e8\u7167\u7247(0)","icon":"http:\/\/u1.sinaimg.cn\/upload\/2014\/06\/10\/userinfo_icon_album.png","icon_name":"\u4e13\u8f91","icon_scheme":""}}]},"showAppTips":1,"scheme":"sinaweibo:\/\/userinfo?uid=1259110474&luicode=10000011&lfid=1005051259110474&from=1110006030"}}
     content = json.loads(data).get('data')
 
     profile_url = content.get('userInfo').get('profile_url')
@@ -73,17 +82,31 @@ def get_userInfo(id):
     return gender
 
 
+def myRequest(req, timeout_mark):
+    data = urllib.request.urlopen(req, timeout=5)
+    print("---sleep---0.5---second---")
+    time.sleep(0.5)
+
+    read_data = data.read().decode('utf-8', 'ignore')
+
+    timeout_mark = False
+    return read_data, timeout_mark
+
+
 def catchWeibo_HTML(scheme):
     req = urllib.request.Request(
         scheme)  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
     req.add_header("User-Agent",
                    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0")
 
-    data = urllib.request.urlopen(req)
-    print("---sleep---0.5---second---")
-    time.sleep(0.5)
-
-    read_data = data.read().decode('utf-8', 'ignore')
+    timeout_mark = True
+    while timeout_mark:
+        try:
+            read_data, timeout_mark = myRequest(req, timeout_mark)
+        except:
+            print("---Time Out ! And Sleep 2 Seconds !---")
+            time.sleep(2)
+            timeout_mark = True
 
     return read_data
 
@@ -175,7 +198,10 @@ def getYear(weibo_created_time):
     return year
 
 
-def tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessCount):
+def tryGetData(early_exit, POIExist_Count, i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessCount, lng, lat):
+    print("---Process : tryGetData---")
+
+
     data = use_proxy(weibo_url, proxy_addr)
 
     content = json.loads(data).get('data')
@@ -206,14 +232,31 @@ def tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessC
                 HTML_data = catchWeibo_HTML(scheme)
                 reqProcessCount += 1
                 print("reqProcessCount : ", reqProcessCount)
-                if reqProcessCount == 50:
-                    print("---50 requests and sleep 3 seconds !---")
+                print("lng : ", lng, "lat : ", lat)
+
+                if reqProcessCount == 10:
+                    print("---10 requests and sleep 1.5 seconds !---")
+                    time.sleep(1.5)
+
+                if reqProcessCount == 25:
+                    print("---25 requests and sleep 1.5 seconds !---")
+                    time.sleep(1.5)
+
+                    if POIExist_Count == 0:
+                        print("---Still No POI ! Exit !---")
+                        early_exit = True
+                        return i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit
+
+                if reqProcessCount == 60:
+                    print("---60 requests and sleep 1.5 seconds !---")
                     reqProcessCount = 0 # 归零
-                    time.sleep(3)
+                    time.sleep(1.5)
 
                 weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_page_title, weibo_content1 = extractINFO(HTML_data)
 
                 if weibo_uid != '':
+
+                    POIExist_Count += 1
 
                     data_dict["uid"] = weibo_uid
                     data_dict["idstr"] = idstr
@@ -237,7 +280,7 @@ def tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessC
 
     i += 1
 
-    return i, recordedINFO, process_mark, reqProcessCount
+    return i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit
 
 
 def writeData(file, recordedINFO):
@@ -252,10 +295,14 @@ def writeData(file, recordedINFO):
 
 
 # 获取微博内容信息,并保存到文本中，内容包括：每条微博的内容、微博详情页面地址、点赞数、评论数、转发数等
-def get_weibo(id, file, reqProcessCount):
+def get_weibo(POIExist_Count, id, file, reqProcessCount, lng, lat):
+    print("---Process : get_weibo---")
+
     i = 1
 
     process_mark = True
+
+    early_exit = False  # 该变量用来判断是否提前退出微博检索
 
     while process_mark:
 
@@ -269,7 +316,11 @@ def get_weibo(id, file, reqProcessCount):
 
         recordedINFO = []  # 该博主的每条微博信息为一个元素
         try:
-            i, recordedINFO, process_mark, reqProcessCount = tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessCount)
+            i, recordedINFO, process_mark, reqProcessCount, POIExist_Count, early_exit = tryGetData(early_exit, POIExist_Count, i, weibo_url, proxy_addr, recordedINFO, process_mark, reqProcessCount, lng, lat)
+
+            if early_exit:
+                print("---Early Exit !---")
+                return reqProcessCount
 
         except Exception as e:
             """
@@ -281,8 +332,8 @@ def get_weibo(id, file, reqProcessCount):
             """
             print(e)
 
-            print("---Now sleep for 1 second to Stop this process---")
-            time.sleep(1)
+            print("---Now sleep for 3 second to Stop this process---")
+            time.sleep(3)
 
         if recordedINFO != []:
             writeData(file, recordedINFO)
@@ -314,20 +365,15 @@ def getUSRID(obj):
     return uid
 
 
-def constructURL(lng, lat, Inc, rightBoundage, downBoundage, ori_lng, ori_lat):
+def constructURL(random, rightBoundage, downBoundage, ori_lng, ori_lat):
+
+    lng = random.uniform(ori_lng, rightBoundage)  # 随机数范围
+    lat = random.uniform(downBoundage, ori_lat)  # 随机数范围
+
     BEGIN_URL = 'https://m.weibo.cn/p/index?containerid=2304410021' + str(lng) + '_' + str(
         lat) + '_&needlocation=1&uid=&count=10&page=1&luicode=&lfid=&featurecode='
 
-    if lng < rightBoundage:
-        lng += Inc
-
-    if abs(lng - rightBoundage) < 0.001:
-        lng = ori_lng
-
-        if lat > downBoundage:
-            lat -= Inc
-        if abs(lat - downBoundage) < 0.001:
-            lat = ori_lat
+    print("---New lng : ", lng, " lat : ", lat, "---")
 
     return BEGIN_URL, lng, lat
 
@@ -379,6 +425,8 @@ if __name__ == "__main__":
 
     reqProcessCount = 0    # 用来记录click 的总次数，每超过50次则休息3秒，然后归零
 
+    random = np.random.RandomState(4)  # RandomState生成随机数种子
+
     _dir = "./"
     _dir = mkDocument(_dir, "Accounts_Wuhan")
     _dir += "/"
@@ -398,16 +446,13 @@ if __name__ == "__main__":
     # 设置代理IP
     proxy_addr = "122.241.72.191:808"
 
-    Inc = 0.01
-    lng = 113.9633
-    lat = 31.36666
     ori_lng = 113.6833
     ori_lat = 31.36666
-    """Sample lng : 113.96430000000134 lat : 31.36666"""
+    """Sample lng : 114.78330000000042 lat : 31.36666"""
     rightBoundage = 115.0833
     downBoundage = 29.9666
 
-    BEGIN_URL, lng, lat = constructURL(lng, lat, Inc, rightBoundage, downBoundage, ori_lng, ori_lat)
+    BEGIN_URL, lng, lat = constructURL(random, rightBoundage, downBoundage, ori_lng, ori_lat)
     obj.get(BEGIN_URL)  # 打开网址
     print("lng : " + str(lng) + " lat : " + str(lat))
 
@@ -432,7 +477,7 @@ if __name__ == "__main__":
                 print("lng : " + str(lng) + " lat : " + str(lat))
 
                 print("---waite 1 second for the refreshing---")
-                time.sleep(0.5)
+                time.sleep(1)
 
                 docPath = ''
                 uid = getUSRID(obj)
@@ -441,27 +486,36 @@ if __name__ == "__main__":
 
                 if docPath != '':
                     writeTimeLog(_dir, uid, timeLogFileName)
+                    POIExist_Count = 0
 
                     file = docPath + "/" + uid + ".json"
-                    reqProcessCount = get_weibo(uid, file, reqProcessCount)
+                    reqProcessCount = get_weibo(POIExist_Count, uid, file, reqProcessCount, lng, lat)
                 else:
                     print("The Account Exists ! ")
+
+                    """并直接退出while 循环"""
+                    break
 
                 """继续用回原来的经纬度URL，直至img-box被click 完"""
                 print("click_i : ", click_i + 1)
                 obj.get(BEGIN_URL)
+
+                print("---waite 2 second for the following click---")
+                time.sleep(2)
 
                 box_list = obj.find_elements_by_class_name("m-img-box")
                 box_length = len(box_list)
 
                 click_i += 1    # 去click 下一个img-box
 
+            print("---退出while 循环---")
+
             # 上面的做完才构造新的URL
-            BEGIN_URL, lng, lat = constructURL(lng, lat, Inc, rightBoundage, downBoundage, ori_lng, ori_lat)
+            BEGIN_URL, lng, lat = constructURL(random, rightBoundage, downBoundage, ori_lng, ori_lat)
             obj.get(BEGIN_URL)  # 打开网址
 
         except:
             print("---Error Appearance---")
-            time.sleep(1)
+            time.sleep(2)
 
     obj.quit()  # 关闭浏览器。当出现异常时记得在任务浏览器中关闭PhantomJS，因为会有多个PhantomJS在运行状态，影响电脑性能
