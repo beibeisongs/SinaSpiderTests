@@ -27,7 +27,8 @@ def catchFromScripts_Steps(m_script):
     print("weibo_content1 : ", weibo_content1)
     if weibo_content1 == []:
         weibo_content1 = ''
-    weibo_content1 = weibo_content1[0]
+    else:
+        weibo_content1 = weibo_content1[0]
 
     weibo_created_time = ''  # Initialize the variable weibo_created_time
     for script in m_script:
@@ -301,8 +302,6 @@ def getWeibo(id, file, lng, lat):
 
     process_mark = True
 
-    recorded_POIPanel_Texts_ID = 0
-
     while process_mark:
 
         """<Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'"""
@@ -314,7 +313,7 @@ def getWeibo(id, file, lng, lat):
                     '&page=' + str(i)
 
         recordedINFO = []  # 该博主的每条微博信息为一个元素
-        # try:
+        """try:"""
         i, recordedINFO, process_mark= tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark,lng, lat)
         """
         except Exception as e:
@@ -476,7 +475,7 @@ def mkDocument(_dir, uid):
 
 if __name__ == "__main__":
 
-    random = np.random.RandomState(6)  # RandomState生成随机数种子
+    random = np.random.RandomState(1)  # RandomState生成随机数种子
 
     _dir = "./"
     _dir = mkDocument(_dir, "Accounts_Wuhan")
@@ -551,8 +550,8 @@ if __name__ == "__main__":
 
                 file = docPath + "/" + uid + ".json"
 
-                host_url = 'https://m.weibo.cn/u/' + str(uid)
-                print("---host_url !---")
+                # host_url = 'https://m.weibo.cn/u/' + str(uid)
+                # print("---host_url !---")
 
                 # recorded_POIPanel_Texts = get_Weibo_host(obj, host_url, file)
 
