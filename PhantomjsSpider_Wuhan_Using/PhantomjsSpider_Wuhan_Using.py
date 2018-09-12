@@ -5,12 +5,14 @@
 
 import json
 import cmath
+import eventlet
 import numpy as np
 import os
 import re
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import TimeoutException
+import signal
 import time
 from TransferTypes import Transfer2TimeType, Transfer2FloatType
 import datetime
@@ -489,9 +491,24 @@ def mkDocument(_dir, uid):
         return ''
 
 
+def obj_Get(obj, BEGIN_URL):
+
+    getURLProcess_mark = True
+
+    eventlet.monkey_patch()
+    while getURLProcess_mark:
+        with eventlet.Timeout(10, False):
+            """继续用回原来的经纬度URL，直至img-box被click 完"""
+            print("click_i : ", click_i + 1)
+            obj.get(BEGIN_URL)
+            getURLProcess_mark = False  # 从而退出循环
+
+    return obj
+
+
 if __name__ == "__main__":
 
-    random = np.random.RandomState(9)  # RandomState生成随机数种子
+    random = np.random.RandomState(7)  # RandomState生成随机数种子
 
     _dir = "./"
     _dir = mkDocument(_dir, "Accounts_Wuhan")
@@ -570,12 +587,15 @@ if __name__ == "__main__":
 
                 file = docPath + "/" + uid + ".json"
 
-                # host_url = 'https://m.weibo.cn/u/' + str(uid)
-                # print("---host_url !---")
+                """This is the logic left before:
+                
+                host_url = 'https://m.weibo.cn/u/' + str(uid)
+                print("---host_url !---")
 
-                # recorded_POIPanel_Texts = get_Weibo_host(obj, host_url, file)
+                recorded_POIPanel_Texts = get_Weibo_host(obj, host_url, file)
 
-                # POIExist_Count = len(recorded_POIPanel_Texts)
+                POIExist_Count = len(recorded_POIPanel_Texts)
+            """
 
                 getWeibo(uid, file, lng, lat)
             else:
@@ -584,9 +604,7 @@ if __name__ == "__main__":
                 """并直接退出while 循环"""
                 break
 
-            """继续用回原来的经纬度URL，直至img-box被click 完"""
-            print("click_i : ", click_i + 1)
-            obj.get(BEGIN_URL)
+            obj = obj_Get(obj, BEGIN_URL)
 
             print("---waite 2 second for the following click---")
             time.sleep(2)
@@ -600,7 +618,7 @@ if __name__ == "__main__":
 
         """上面的做完才构造新的URL"""
         BEGIN_URL, lng, lat = constructURL(random, rightBoundage, downBoundage, ori_lng, ori_lat)
-        obj.get(BEGIN_URL)  # 打开网址
+        obj = obj_Get(obj, BEGIN_URL)
 
         """
         except:
