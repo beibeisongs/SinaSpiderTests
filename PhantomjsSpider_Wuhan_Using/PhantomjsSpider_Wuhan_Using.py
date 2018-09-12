@@ -20,26 +20,33 @@ import urllib.request
 def catchFromScripts_Steps(m_script):
 
     weibo_content1 = ''  # Initialize the variable weibo_page_title
+    weibo_created_time = ''  # Initialize the variable weibo_created_time
+    weibo_uid = ''
+    weibo_pic_url = []
+    weibo_gender = ''
+
     for script in m_script:
         res_content1 = r'"content1": "(.*?)"'
 
         weibo_content1 = re.findall(res_content1, script)
     print("weibo_content1 : ", weibo_content1)
-    if weibo_content1 == []:
-        weibo_content1 = ''
-    else:
+    if len(weibo_content1) != 0:
         weibo_content1 = weibo_content1[0]
+    else:
+        weibo_content1 = ''
 
-    weibo_created_time = ''  # Initialize the variable weibo_created_time
+
     for script in m_script:
         # 注意：created_at 是一个类似json 的key
         res_created_time = r'"created_at": "(.*?)"'
 
         weibo_created_time = re.findall(res_created_time, script)
     print("weibo_created_time : ", weibo_created_time)
+    if len(weibo_created_time) == 0:
+        return weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_content1
     weibo_created_time = weibo_created_time[0]
 
-    weibo_uid = ''
+
     for script in m_script:
         res_uid = r'"id": (.*?),'
 
@@ -47,14 +54,14 @@ def catchFromScripts_Steps(m_script):
     print("weibo-uid : ", weibo_uid)
     weibo_uid = weibo_uid[1]
 
-    weibo_pic_url = []
+
     for script in m_script:
         res_url = r'"url": "(.*?)"'
 
         weibo_pic_url = re.findall(res_url, script)
     print("weibo_pic_url : ", weibo_pic_url)
 
-    weibo_gender = ''
+
     for script in m_script:
         res_gender = r'"gender": "(.*?)"'
 
@@ -484,7 +491,7 @@ def mkDocument(_dir, uid):
 
 if __name__ == "__main__":
 
-    random = np.random.RandomState(1)  # RandomState生成随机数种子
+    random = np.random.RandomState(9)  # RandomState生成随机数种子
 
     _dir = "./"
     _dir = mkDocument(_dir, "Accounts_Wuhan")
@@ -548,6 +555,8 @@ if __name__ == "__main__":
               # uid = '3904590483'
                # 曾出错测试：6174060595
                 # uid = '6174060595'
+                 # 曾出错测试：'3636204462'
+                  # uid = '3636204462'
             print("uid : ", uid)
 
             try:
