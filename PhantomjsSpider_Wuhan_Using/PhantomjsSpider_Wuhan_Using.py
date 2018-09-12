@@ -225,9 +225,8 @@ def tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark, lng, lat):
     else:
         process_mark = False
 
-    i += 1
+    return recordedINFO, process_mark
 
-    return i, recordedINFO, process_mark
 
 def open_Json_File_To_Write(path_to_write):
     judgeExisting = os.path.exists(path_to_write)
@@ -258,6 +257,7 @@ def use_proxy(url, proxy_addr):  # <Sample> proxy_addr = '122.241.72.191:808'
             data = urllib.request.urlopen(req, timeout=5)
             data_read = data.read().decode('utf-8', 'ignore')
 
+            print("data_read : ", data_read)
             request_mark = False    # 退出循环
         except:
             print("---Proxy Time Out !---")
@@ -269,13 +269,18 @@ def use_proxy(url, proxy_addr):  # <Sample> proxy_addr = '122.241.72.191:808'
 # 获取微博主页的containerid，爬取微博内容时需要此id
 def get_containerid(url):
     data = use_proxy(url, proxy_addr)
+    data_json = json.loads(data)
 
     containerid = ''
 
-    content = json.loads(data).get('data')
-    for data in content.get('tabsInfo').get('tabs'):
-        if (data.get('tab_type') == 'weibo'):
-            containerid = data.get('containerid')
+    content = data_json.get('data')
+
+    try:
+        for data in content.get('tabsInfo').get('tabs'):
+            if (data.get('tab_type') == 'weibo'):
+                containerid = data.get('containerid')
+    except:
+        return containerid
 
     return containerid
 
@@ -307,29 +312,33 @@ def getWeibo(id, file, lng, lat):
         """<Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'"""
         url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=' + id
 
-        """<Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474&containerid=1076031259110474&page=1'"""
-        weibo_url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=' + id + \
-                    '&containerid=' + get_containerid(url) + \
-                    '&page=' + str(i)
+        containerid = get_containerid(url)
+        if containerid != '':
 
-        recordedINFO = []  # 该博主的每条微博信息为一个元素
-        """try:"""
-        i, recordedINFO, process_mark= tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark,lng, lat)
-        """
-        except Exception as e:
-            
-            print(e)
+            """<Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474&containerid=1076031259110474&page=1'"""
+            weibo_url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=' + id + \
+                        '&containerid=' + containerid + '&page=' + str(i)
 
-            print("---Now sleep for 3 second to Stop this process---")
-            time.sleep(3)
-        """
+            recordedINFO = []  # 该博主的每条微博信息为一个元素
+            """try:"""
+            recordedINFO, process_mark= tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark,lng, lat)
+            """
+            except Exception as e:
+                
+                print(e)
+    
+                print("---Now sleep for 3 second to Stop this process---")
+                time.sleep(3)
+            """
 
-        if recordedINFO != []:
-            writeData(file, recordedINFO)
+            if recordedINFO != []:
+                writeData(file, recordedINFO)
 
-            print("content of one page:　")
-            for record_sample in recordedINFO:
-                print(record_sample)
+                print("content of one page:　")
+                for record_sample in recordedINFO:
+                    print(record_sample)
+
+        i += 1
 
 
 def GoThrough_Current_Page(obj, vip_panel_list, panel_id_record, length_panel_list, recordedINFO):
@@ -537,6 +546,8 @@ if __name__ == "__main__":
             # 测试：5313321908
              # 曾出错测试：3904590483
               # uid = '3904590483'
+               # 曾出错测试：6174060595
+                # uid = '6174060595'
             print("uid : ", uid)
 
             try:
@@ -578,7 +589,7 @@ if __name__ == "__main__":
 
         print("---退出while 循环---")
 
-        # 上面的做完才构造新的URL
+        """上面的做完才构造新的URL"""
         BEGIN_URL, lng, lat = constructURL(random, rightBoundage, downBoundage, ori_lng, ori_lat)
         obj.get(BEGIN_URL)  # 打开网址
 
