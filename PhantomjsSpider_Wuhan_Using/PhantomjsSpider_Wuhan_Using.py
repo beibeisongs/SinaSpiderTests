@@ -346,6 +346,8 @@ def getWeibo(id, file, lng, lat):
                 print("content of one page:　")
                 for record_sample in recordedINFO:
                     print(record_sample)
+        else:
+            process_mark = False
 
         i += 1
 
