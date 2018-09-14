@@ -12,7 +12,6 @@ import re
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import TimeoutException
-import signal
 import time
 from TransferTypes import Transfer2TimeType, Transfer2FloatType
 import datetime
@@ -142,8 +141,7 @@ def myRequest(req, timeout_mark):
 
 
 def catchWeibo_HTML(scheme):
-    req = urllib.request.Request(
-        scheme)  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
+    req = urllib.request.Request(scheme)  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
     req.add_header("User-Agent",
                    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0")
 
@@ -266,7 +264,6 @@ def use_proxy(url, proxy_addr):  # <Sample> proxy_addr = '122.241.72.191:808'
             data = urllib.request.urlopen(req, timeout=5)
             data_read = data.read().decode('utf-8', 'ignore')
 
-            print("data_read : ", data_read)
             request_mark = False    # 退出循环
         except:
             print("---Proxy Time Out !---")
@@ -288,6 +285,7 @@ def get_containerid(url):
         for data in content.get('tabsInfo').get('tabs'):
             if (data.get('tab_type') == 'weibo'):
                 containerid = data.get('containerid')
+                print("containerid : ", containerid)
     except:
         return containerid
 
@@ -316,6 +314,8 @@ def getWeibo(id, file, lng, lat):
 
     process_mark = True
 
+    POIWeibo_Count = 0
+
     while process_mark:
 
         """<Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'"""
@@ -343,6 +343,9 @@ def getWeibo(id, file, lng, lat):
             if recordedINFO != []:
                 writeData(file, recordedINFO)
 
+                POIWeibo_Count += len(recordedINFO)
+                print("POIWeibo_Count : ", POIWeibo_Count)
+
                 print("content of one page:　")
                 for record_sample in recordedINFO:
                     print(record_sample)
@@ -350,6 +353,10 @@ def getWeibo(id, file, lng, lat):
             process_mark = False
 
         i += 1
+
+        if i == 21:
+            if POIWeibo_Count == 0:
+                process_mark = False    # 从而退出循环
 
 
 def GoThrough_Current_Page(obj, vip_panel_list, panel_id_record, length_panel_list, recordedINFO):
@@ -500,8 +507,6 @@ def obj_Get(obj, BEGIN_URL):
     eventlet.monkey_patch()
     while getURLProcess_mark:
         with eventlet.Timeout(10, False):
-            """继续用回原来的经纬度URL，直至img-box被click 完"""
-            print("click_i : ", click_i + 1)
             obj.get(BEGIN_URL)
             getURLProcess_mark = False  # 从而退出循环
 
@@ -510,7 +515,7 @@ def obj_Get(obj, BEGIN_URL):
 
 if __name__ == "__main__":
 
-    random = np.random.RandomState(7)  # RandomState生成随机数种子
+    random = np.random.RandomState(3)  # RandomState生成随机数种子
 
     _dir = "./"
     _dir = mkDocument(_dir, "Accounts_Wuhan")
@@ -537,7 +542,7 @@ if __name__ == "__main__":
     downBoundage = 29.9666
 
     BEGIN_URL, lng, lat = constructURL(random, rightBoundage, downBoundage, ori_lng, ori_lat)
-    obj.get(BEGIN_URL)  # 打开网址
+    obj = obj_Get(obj, BEGIN_URL)
     print("lng : " + str(lng) + " lat : " + str(lat))
 
     Loop_Mark = True
@@ -566,17 +571,20 @@ if __name__ == "__main__":
             print("---waite 1 second for the refreshing---")
             time.sleep(1)
 
-            docPath = ''
-            uid = getUSRID(obj)
-            # 临时测试：------------------------------------------
-            # 测试：5313321908
-             # 曾出错测试：3904590483
-              # uid = '3904590483'
-               # 曾出错测试：6174060595
-                # uid = '6174060595'
-                 # 曾出错测试：'3636204462'
-                  # uid = '3636204462'
-            print("uid : ", uid)
+            try:
+                docPath = ''
+                uid = getUSRID(obj)
+                # 临时测试：------------------------------------------
+                # 测试：5313321908
+                 # 曾出错测试：3904590483
+                  # uid = '3904590483'
+                   # 曾出错测试：6174060595
+                    # uid = '6174060595'
+                     # 曾出错测试：'3636204462'
+                      # uid = '3636204462'
+                print("uid : ", uid)
+            except:
+                uid = 'abc'
 
             try:
                 uid_int = int(uid)  # 有时：uid 不是数字，要跳过
@@ -615,6 +623,7 @@ if __name__ == "__main__":
             box_length = len(box_list)
 
             click_i += 1  # 去click 下一个img-box
+            print("click_i : ", click_i)
 
         print("---退出while 循环---")
 
