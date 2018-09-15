@@ -528,7 +528,7 @@ def obj_Get(obj, BEGIN_URL):
 
 if __name__ == "__main__":
 
-    random = np.random.RandomState(4)  # RandomState生成随机数种子
+    random = np.random.RandomState(12)  # RandomState生成随机数种子
 
     _dir = "./"
     _dir = mkDocument(_dir, "Accounts_Wuhan")
@@ -566,12 +566,12 @@ if __name__ == "__main__":
         """声明index暂存变量
             目前是在“此地周边”进行的列表性点击
         """
-        click_i = 0
+        click_i = 1 # 注意：初始值为1 是规律
 
         scorll_i = 0  # 记录滚动滑块的次数
 
         """try:"""
-        box_list = obj.find_elements_by_class_name("m-img-box")
+        box_list = obj.find_elements_by_class_name("m-text-cut")
         box_length = len(box_list)
         print("box_length : ", box_length)
 
@@ -627,7 +627,9 @@ if __name__ == "__main__":
                 print("The Account Exists ! ")
 
 
-            click_i += 3  # 去click 下一个img-box
+            click_i += 2  # 去click 下一个img-box
+                            # 注意：+2 是规律
+
             print("click_i : ", click_i)
             print("scroll_i : ", scorll_i)
 
@@ -638,7 +640,7 @@ if __name__ == "__main__":
                 print("---waite 2 second for Get(BEGIN_URL) !---")
                 time.sleep(2)
 
-                box_list = obj.find_elements_by_class_name("m-img-box")
+                box_list = obj.find_elements_by_class_name("m-text-cut")
                 box_length = len(box_list)
                 print("---newlength_panel_list---", box_length)
 
