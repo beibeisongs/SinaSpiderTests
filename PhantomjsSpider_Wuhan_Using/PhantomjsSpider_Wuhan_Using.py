@@ -19,7 +19,6 @@ import urllib.request
 
 
 def catchFromScripts_Steps(m_script):
-
     weibo_content1 = ''  # Initialize the variable weibo_page_title
     weibo_created_time = ''  # Initialize the variable weibo_created_time
     weibo_uid = ''
@@ -36,7 +35,6 @@ def catchFromScripts_Steps(m_script):
     else:
         weibo_content1 = ''
 
-
     for script in m_script:
         # 注意：created_at 是一个类似json 的key
         res_created_time = r'"created_at": "(.*?)"'
@@ -47,7 +45,6 @@ def catchFromScripts_Steps(m_script):
         return weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_content1
     weibo_created_time = weibo_created_time[0]
 
-
     for script in m_script:
         res_uid = r'"id": (.*?),'
 
@@ -55,13 +52,11 @@ def catchFromScripts_Steps(m_script):
     print("weibo-uid : ", weibo_uid)
     weibo_uid = weibo_uid[1]
 
-
     for script in m_script:
         res_url = r'"url": "(.*?)"'
 
         weibo_pic_url = re.findall(res_url, script)
     print("weibo_pic_url : ", weibo_pic_url)
-
 
     for script in m_script:
         res_gender = r'"gender": "(.*?)"'
@@ -74,7 +69,6 @@ def catchFromScripts_Steps(m_script):
 
 
 def catchFromScipt(html_script, HTML_data):
-
     weibo_uid = ''
     weibo_created_time = ''
     weibo_pic_url = []
@@ -124,7 +118,8 @@ def catchFromScipt(html_script, HTML_data):
 def extractINFO(HTML_data):
     html_script = r'<script>(.*?)</script>'
 
-    weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_page_title, weibo_content1 = catchFromScipt(html_script, HTML_data)
+    weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_page_title, weibo_content1 = catchFromScipt(
+        html_script, HTML_data)
 
     return weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_page_title, weibo_content1
 
@@ -141,7 +136,8 @@ def myRequest(req, timeout_mark):
 
 
 def catchWeibo_HTML(scheme):
-    req = urllib.request.Request(scheme)  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
+    req = urllib.request.Request(
+        scheme)  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
     req.add_header("User-Agent",
                    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0")
 
@@ -190,43 +186,45 @@ def tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark, lng, lat):
                 if len(text) > 0:
                     if ("·" in text):
 
-                                print()
-                                print()
-                                print()
+                        print()
+                        print()
+                        print()
 
-                                """Initialize data dict"""
-                                data_dict = {}
+                        """Initialize data dict"""
+                        data_dict = {}
 
-                                idstr = mblog.get('idstr')  # 微博的idstr，储存起来，为后续爬虫再用
-                                # <Sample>: idstr = 4281561774373070
-                                # (Sample): tested_url of weibo: https://m.weibo.cn/status/4281561774373070
+                        idstr = mblog.get('idstr')  # 微博的idstr，储存起来，为后续爬虫再用
+                        # <Sample>: idstr = 4281561774373070
+                        # (Sample): tested_url of weibo: https://m.weibo.cn/status/4281561774373070
 
-                                scheme = cards[j].get('scheme')  # <Sample>: scheme = 'https://m.weibo.cn/status/GydNfilDo?mblogid=GydNfilDo&luicode=10000011&lfid=1076031995216231'
+                        scheme = cards[j].get(
+                            'scheme')  # <Sample>: scheme = 'https://m.weibo.cn/status/GydNfilDo?mblogid=GydNfilDo&luicode=10000011&lfid=1076031995216231'
 
-                                HTML_data = catchWeibo_HTML(scheme)
-                                print("lng : ", lng, "lat : ", lat)
+                        HTML_data = catchWeibo_HTML(scheme)
+                        print("lng : ", lng, "lat : ", lat)
 
-                                weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_page_title, weibo_content1 = extractINFO(HTML_data)
+                        weibo_uid, weibo_created_time, weibo_pic_url, weibo_gender, weibo_page_title, weibo_content1 = extractINFO(
+                            HTML_data)
 
-                                if weibo_uid != '':
+                        if weibo_uid != '':
 
-                                    data_dict["uid"] = weibo_uid
-                                    data_dict["idstr"] = idstr
-                                    data_dict["gender"] = weibo_gender
-                                    data_dict["title"] = weibo_page_title
-                                    print("---" + weibo_page_title + "---")
-                                    data_dict["content1"] = weibo_content1
+                            data_dict["uid"] = weibo_uid
+                            data_dict["idstr"] = idstr
+                            data_dict["gender"] = weibo_gender
+                            data_dict["title"] = weibo_page_title
+                            print("---" + weibo_page_title + "---")
+                            data_dict["content1"] = weibo_content1
 
-                                    data_dict["created_at"] = weibo_created_time
-                                    print("created_at : ", weibo_created_time)
+                            data_dict["created_at"] = weibo_created_time
+                            print("created_at : ", weibo_created_time)
 
-                                    data_dict["text"] = text
-                                    data_dict["pic_urls"] = weibo_pic_url
+                            data_dict["text"] = text
+                            data_dict["pic_urls"] = weibo_pic_url
 
-                                    year = getYear(weibo_created_time)
-                                    if int(year) <= 2016: process_mark = False  # <Attention>: 发出年份小于2016的将不再爬取
+                            year = getYear(weibo_created_time)
+                            if int(year) <= 2016: process_mark = False  # <Attention>: 发出年份小于2016的将不再爬取
 
-                                    recordedINFO.append(data_dict)
+                            recordedINFO.append(data_dict)
 
                 card_tot_id += 1
     else:
@@ -248,7 +246,8 @@ def open_Json_File_To_Write(path_to_write):
 # 定义页面打开函数
 def use_proxy(url, proxy_addr):  # <Sample> proxy_addr = '122.241.72.191:808'
 
-    req = urllib.request.Request(url)  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
+    req = urllib.request.Request(
+        url)  # <Sample>: url = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=1259110474'
 
     # req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.221 Safari/537.36 SE 2.X MetaSr 1.0")
     req.add_header("User-Agent",
@@ -264,7 +263,7 @@ def use_proxy(url, proxy_addr):  # <Sample> proxy_addr = '122.241.72.191:808'
             data = urllib.request.urlopen(req, timeout=5)
             data_read = data.read().decode('utf-8', 'ignore')
 
-            request_mark = False    # 退出循环
+            request_mark = False  # 退出循环
         except:
             print("---Proxy Time Out !---")
             request_mark = True
@@ -330,12 +329,12 @@ def getWeibo(id, file, lng, lat):
 
             recordedINFO = []  # 该博主的每条微博信息为一个元素
             """try:"""
-            recordedINFO, process_mark= tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark,lng, lat)
+            recordedINFO, process_mark = tryGetData(i, weibo_url, proxy_addr, recordedINFO, process_mark, lng, lat)
             """
             except Exception as e:
-                
+
                 print(e)
-    
+
                 print("---Now sleep for 3 second to Stop this process---")
                 time.sleep(3)
             """
@@ -356,11 +355,18 @@ def getWeibo(id, file, lng, lat):
 
         if i == 21:
             if POIWeibo_Count == 0:
-                process_mark = False    # 从而退出循环
+                process_mark = False  # 从而退出循环
+
+        if i == 50:
+            if POIWeibo_Count < 3:
+                process_mark = False
+
+        if i == 70:
+            if POIWeibo_Count < 4:
+                process_mark = False
 
 
 def GoThrough_Current_Page(obj, vip_panel_list, panel_id_record, length_panel_list, recordedINFO):
-
     print("---Go Through Current Page !---")
 
     while panel_id_record < length_panel_list:
@@ -378,7 +384,6 @@ def GoThrough_Current_Page(obj, vip_panel_list, panel_id_record, length_panel_li
 
 
 def get_Weibo_host(obj, host_url, file):
-
     panel_id_record = 0
 
     length_panel_change = True
@@ -396,16 +401,16 @@ def get_Weibo_host(obj, host_url, file):
     print("---length_panel_list---", length_panel_list)
     if length_panel_list > 0:
 
-        recorded_POIPanel_Texts = []   # 初始化panel Text记录器
+        recorded_POIPanel_Texts = []  # 初始化panel Text记录器
 
         while length_panel_change:
             """
             recordedINFO改成记录有POI的微博的标号
             """
             vip_panel_list, panel_id_record, recorded_POIPanel_Texts, obj = GoThrough_Current_Page(obj, vip_panel_list,
-                                                                                        panel_id_record,
-                                                                                        length_panel_list,
-                                                                                        recorded_POIPanel_Texts)
+                                                                                                   panel_id_record,
+                                                                                                   length_panel_list,
+                                                                                                   recorded_POIPanel_Texts)
             print("---One Loop Finished !---")
 
             # 执行js代码（让滚动条向下偏移n个像素（作用：动态加载了更多信息））
@@ -429,7 +434,6 @@ def get_Weibo_host(obj, host_url, file):
 
 
 def writeTimeLog(_dir, uid, timeLogFileName):
-
     json_path = _dir + uid + "/" + timeLogFileName
 
     log_data = {}
@@ -467,7 +471,6 @@ def getUSRID(obj):
 
 
 def constructURL(random, rightBoundage, downBoundage, ori_lng, ori_lat):
-
     lng = random.uniform(ori_lng, rightBoundage)  # 随机数范围
     lat = random.uniform(downBoundage, ori_lat)  # 随机数范围
 
@@ -501,21 +504,31 @@ def mkDocument(_dir, uid):
 
 
 def obj_Get(obj, BEGIN_URL):
-
     getURLProcess_mark = True
 
-    eventlet.monkey_patch()
-    while getURLProcess_mark:
-        with eventlet.Timeout(10, False):
-            obj.get(BEGIN_URL)
-            getURLProcess_mark = False  # 从而退出循环
+    tryConnectLoop_mark = True
+
+    while tryConnectLoop_mark:
+        try:
+            eventlet.monkey_patch()
+            while getURLProcess_mark:
+                with eventlet.Timeout(10, False):
+                    obj.get(BEGIN_URL)
+                    getURLProcess_mark = False  # 从而退出循环
+
+            tryConnectLoop_mark = False  # 从而退出最外层循环
+        except:
+            tryConnectLoop_mark = True
+
+            print("---obj_Get Error !---sleep 3 seconds !---")
+            time.sleep(3)
 
     return obj
 
 
 if __name__ == "__main__":
 
-    random = np.random.RandomState(3)  # RandomState生成随机数种子
+    random = np.random.RandomState(4)  # RandomState生成随机数种子
 
     _dir = "./"
     _dir = mkDocument(_dir, "Accounts_Wuhan")
@@ -555,10 +568,12 @@ if __name__ == "__main__":
         """
         click_i = 0
 
-        """try:"""
+        scorll_i = 0  # 记录滚动滑块的次数
 
+        """try:"""
         box_list = obj.find_elements_by_class_name("m-img-box")
         box_length = len(box_list)
+        print("box_length : ", box_length)
 
         while click_i < box_length:
 
@@ -574,14 +589,14 @@ if __name__ == "__main__":
             try:
                 docPath = ''
                 uid = getUSRID(obj)
-                # 临时测试：------------------------------------------
+                # 临时测试：--------------------------------------
                 # 测试：5313321908
-                 # 曾出错测试：3904590483
-                  # uid = '3904590483'
-                   # 曾出错测试：6174060595
-                    # uid = '6174060595'
-                     # 曾出错测试：'3636204462'
-                      # uid = '3636204462'
+                # 曾出错测试：3904590483
+                # uid = '3904590483'
+                # 曾出错测试：6174060595
+                # uid = '6174060595'
+                # 曾出错测试：'3636204462'
+                # uid = '3636204462'
                 print("uid : ", uid)
             except:
                 uid = 'abc'
@@ -598,7 +613,7 @@ if __name__ == "__main__":
                 file = docPath + "/" + uid + ".json"
 
                 """This is the logic left before:
-                
+
                 host_url = 'https://m.weibo.cn/u/' + str(uid)
                 print("---host_url !---")
 
@@ -611,19 +626,45 @@ if __name__ == "__main__":
             else:
                 print("The Account Exists ! ")
 
-                """并直接退出while 循环"""
-                break
 
-            obj = obj_Get(obj, BEGIN_URL)
-
-            print("---waite 2 second for the following click---")
-            time.sleep(2)
-
-            box_list = obj.find_elements_by_class_name("m-img-box")
-            box_length = len(box_list)
-
-            click_i += 1  # 去click 下一个img-box
+            click_i += 3  # 去click 下一个img-box
             print("click_i : ", click_i)
+            print("scroll_i : ", scorll_i)
+
+            if click_i < box_length:
+                print("---click_i < box_length !---")
+                obj = obj_Get(obj, BEGIN_URL)
+
+                print("---waite 2 second for Get(BEGIN_URL) !---")
+                time.sleep(2)
+
+                box_list = obj.find_elements_by_class_name("m-img-box")
+                box_length = len(box_list)
+                print("---newlength_panel_list---", box_length)
+
+            elif click_i >= box_length:
+                print("---click_i >= box_length !---")
+
+                scorll_i += 1
+                if scorll_i == 2:
+                    break  # 从而退出该while 循环
+
+                # 执行js代码（让滚动条向下偏移n个像素（作用：动态加载了更多信息））
+                js = 'var q=document.body.scrollTop=10000'
+                obj.execute_script(js)  # 该函数可以执行一组字符串形式的js代码
+
+                print("---滚动条下拉---")
+                print("---Sleep 2 Seconds for the more INFO Loaded !---")
+                time.sleep(2)
+
+                box_list = obj.find_elements_by_class_name("m-img-box")
+                new_box_list_length = len(box_list)
+                print("---newlength_panel_list---", new_box_list_length)
+
+                if not new_box_list_length > click_i:
+                    break  # 从而退出该while 循环
+                else:
+                    box_length = new_box_list_length
 
         print("---退出while 循环---")
 
